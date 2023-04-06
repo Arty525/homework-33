@@ -1,0 +1,258 @@
+template<typename T1, typename T2>
+class Register
+{
+private:
+        std::vector<std::pair<T1,T2>> m_register;
+public:
+    void add(T1 key, T2 value);
+    void remove(T1 key);
+    void print();
+    T2 find(T1 key);
+};
+
+
+#include <vector>
+#include <iostream>
+#include <string>
+#include <algorithm>
+
+template<typename T1, typename T2>
+class Map
+{
+private:
+	std::vector<std::pair<T1, T2>> pairs;
+public:
+	void add(T1 key, T2 value)
+	{
+		pairs.push_back(std::pair<T1, T2>(key, value));
+	}
+	void remove(T1 key)
+	{
+		auto it = pairs.begin();
+		while (it != pairs.end())
+		{
+			if (it->first == key)
+			{
+				it = pairs.erase(it);
+			}
+			else
+			{
+				++it;
+			};
+		}
+	}
+	void print()
+	{
+		for (size_t i = 0; i < pairs.size(); i++)
+		{
+			std::cout << "key: " << pairs[i].first << " value: " << pairs[i].second << std::endl;
+		}
+	}
+	void find(T1 key) 
+	{
+		auto it = pairs.begin();
+		while (it != pairs.end())
+		{
+			if (it->first == key)
+			{
+				std::cout << "key: " << it->first << " value: " << it->second << std::endl;
+			}
+			++it;
+		}
+	}
+};
+
+class Collection
+{
+	Map<int, int> map_ii;
+	Map<int, double> map_id;
+	Map<int, std::string> map_is;
+	Map<double, int> map_di;
+	Map<double, double> map_dd;
+	Map<double, std::string> map_ds;
+	Map<std::string, int> map_si;
+	Map<std::string, double> map_sd;
+	Map<std::string, std::string> map_ss;
+
+	std::string		key_s, value_s;
+	int				key_i, value_i;
+	double			key_d, value_d;
+	
+public:
+	
+
+	void add()
+	{
+		std::cout << "Enter the key:" << std::endl;
+		std::cin >> key_s;
+
+		std::cout << "Enter the value:" << std::endl;
+		std::cin >> value_s;
+
+		if (is_number(key_s))
+		{
+			key_i = stoi(key_s);
+			if (is_number(value_s))
+			{
+				value_i = stoi(value_s);
+				map_ii.add(key_i, value_i);
+			}
+			else if (to_double(value_s, value_d))
+			{
+				map_id.add(key_i, value_d);
+			}
+			else
+			{
+				map_is.add(key_i, value_s);
+			}
+		}
+		else if (to_double(key_s, key_d))
+		{
+			if (is_number(value_s))
+			{
+				value_i = stoi(value_s);
+				map_di.add(key_d, value_i);
+			}
+			else if (to_double(value_s, value_d))
+			{
+				map_dd.add(key_d, value_d);
+			}
+			else
+			{
+				map_ds.add(key_d, value_s);
+			}
+		}
+		else
+		{
+			if (is_number(value_s))
+			{
+				value_i = stoi(value_s);
+				map_si.add(key_s, value_i);
+			}
+			else if (to_double(value_s, value_d))
+			{
+				map_sd.add(key_s, value_d);
+			}
+			else
+			{
+				map_ss.add(key_s, value_s);
+			}
+		}
+	}
+
+	void remove()
+	{
+		std::cout << "Enter the key:" << std::endl;
+		std::cin >> key_s;
+
+		if (is_number(key_s))
+		{
+			key_i = stoi(key_s);
+			map_ii.remove(key_i);
+			map_id.remove(key_i);
+			map_is.remove(key_i);
+		}
+		else if (to_double(key_s, key_d))
+		{
+			map_di.remove(key_d);
+			map_dd.remove(key_d);
+			map_ds.remove(key_d);
+		}
+		else
+		{
+			map_si.remove(key_s);
+			map_sd.remove(key_s);
+			map_ss.remove(key_s);
+		}
+	}
+
+	void find()
+	{
+		std::cout << "Enter the key:" << std::endl;
+		std::cin >> key_s;
+
+		if (is_number(key_s))
+		{
+			key_i = stoi(key_s);
+			map_ii.find(key_i);
+			map_id.find(key_i);
+			map_is.find(key_i);
+		}
+		else if (to_double(key_s, key_d))
+		{
+			map_di.find(key_d);
+			map_dd.find(key_d);
+			map_ds.find(key_d);
+		}
+		else
+		{
+			map_si.find(key_s);
+			map_sd.find(key_s);
+			map_ss.find(key_s);
+		}
+	}
+
+	void print()
+	{
+		map_ii.print();
+		map_id.print();
+		map_is.print();
+		map_di.print();
+		map_dd.print();
+		map_ds.print();
+		map_si.print();
+		map_sd.print();
+		map_ss.print();
+	}
+
+	private:
+		bool is_number(const std::string& s)
+		{
+			return !s.empty() && std::find_if(s.begin(),
+				s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+		}
+
+		bool to_double(const std::string str, double& d)
+		{
+			char* endptr = 0;
+			d = strtod(str.c_str(), &endptr);
+			if (*endptr != '\0' || endptr == str)
+				return false;
+			return true;
+		}
+};
+
+int main()
+{
+	Collection collection = Collection();
+	
+    std::string command;
+
+	do
+	{
+		std::cout << "Enter the command:" << std::endl;
+		std::cin >> command;
+
+		if (command == "add")
+		{
+			collection.add();
+		}
+		else if (command == "remove")
+		{
+			collection.remove();
+		}
+		else if (command == "find")
+		{
+			collection.find();
+		}
+		else if (command == "print")
+		{
+			collection.print();
+		}
+		else if (command != "exit")
+		{
+			std::cout << "Unknown command." << std::endl;
+		}
+	} while (command != "exit");
+    
+}
