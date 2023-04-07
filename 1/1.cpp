@@ -19,7 +19,7 @@ public:
 	void remove(std::string article, int count) {
 		it = dataBase.find(article);
 		it->second = it->second - count;
-		std::cout << "Available " << article << ":" << it->second << std::endl;
+		std::cout << "Available at storage" << article << ":" << it->second << std::endl;
 	}
 
 	void display() {
@@ -45,20 +45,51 @@ public:
 				throw std::invalid_argument("count out of range");
 			}
 			else {
-				cart.insert(std::pair<std::string, int>(a,c));
-				std::cout << a << " " << c << " add to cart" << std::endl;
-				db->remove(a, c);
+				if (cart.find(a) == cart.end()) {
+					cart.insert(std::pair<std::string, int>(a, c));
+					std::cout << a << " " << c << " add to cart" << std::endl;
+					db->remove(a, c);
+					it = cart.find(a);
+					std::cout << "Avalable " << it->first << " at cart: " << it->second << std::endl;
+				}
+				else {
+					it = cart.find(a);
+					it->second += c;
+					std::cout << a << " " << c << " add to cart" << std::endl;
+					db->remove(a, c);
+					std::cout << "Avalable " << it->first << " at cart: " << it->second << std::endl;
+				}
 			}
 		}
-		if (!found) {
+		else {
 			throw std::invalid_argument("article not found");
 		}
 	}
 
-	void remove(std::string a, int c) {
-		std::map<std::string, int>::iterator it = cart.find(a);
-		it->second = it->second - c;
-		std::cout << "Available " << a << ": " << it->second << std::endl;
+	void remove(std::string a, int c, DataBase* db) {\
+		if (c < 0) {
+			throw std::invalid_argument("count below zero");
+		}
+		else {
+			std::map<std::string, int>::iterator it = cart.find(a);
+			bool found = false;
+			found = it != cart.end();
+			if (found) {
+				if (c > it->second) {
+					throw std::invalid_argument("count out of range");
+				}
+				else {
+					it->second = it->second - c;
+					std::cout << "Available " << a << " at cart: " << it->second << std::endl;
+					it = db->dataBase.find(a);
+					it->second += c;
+					std::cout << "Available at storage: " << it->second << std::endl;
+				}
+			}
+			else {
+				throw std::invalid_argument("article not found");
+			}
+		}
 	}
 
 	void display() {
@@ -75,10 +106,12 @@ int main() {
 	Cart crt;
 
 	std::string article;
-	int count;
+	int count, n;
 
 	//Добавление товара в базу
 	std::cout << "Add articles to database" << std::endl;
+	std::cout << "How many articles do you want to add?: " << std::endl;
+	std::cin >> n;
 	do {
 		std::cout << "Article: ";
 		std::cin >> article;
@@ -93,14 +126,14 @@ int main() {
 		catch (...) {
 			std::runtime_error("Something happen");
 		}
-	} while (db.dataBase.size() < 5);
+	} while (db.dataBase.size() < n);
 
-	db.display();
-
+	db.display(); //Вывод содержимого базы данных
+	
 	do {
 		std::cout << "Command: ";
 		std::cin >> article;
-		if (article == "add") {
+		if (article == "add") {//Добавление товаров в корзину
 			std::cout << "Add articles to cart" << std::endl;
 			std::cout << "Article: ";
 			std::cin >> article;
@@ -116,107 +149,25 @@ int main() {
 				std::runtime_error("Something happen");
 			}
 		}
-		if (article == "remove") {
+		if (article == "remove") {//Удаление из корзины
 			std::cout << "Remove articles from cart" << std::endl;
 			std::cout << "Article: ";
 			std::cin >> article;
 			std::cout << "Count: ";
 			std::cin >> count;
-			crt.remove(article, count);
+			try{
+				crt.remove(article, count, &db);
+			}
+			catch (const std::exception& x) {
+				std::cerr << "Caught exception: " << x.what() << std::endl;
+			}
+			catch (...) {
+				std::runtime_error("Something happen");
+			}
 		}
-		if (article == "display") {
+		if (article == "display") {//Вывод содержимого корзины
 			crt.display();
 		}
 	} while (article != "stop");
-
-	/*try {
-		db.add("milk", 100);
-	}
-	catch (const std::exception& x) {
-		std::cerr << " Caught exception: " << x.what() << std::endl;
-	}
-	catch (...) {
-		std::cerr << "Something happen..." << std::endl;
-	}
-
-	try {
-		db.add("potato", 500);
-	}
-	catch (const std::exception& x) {
-		std::cerr << "Caught exception: " << x.what() << std::endl;
-	}
-	catch (...) {
-		std::cerr << "Something happen..." << std::endl;
-	}
-
-	try {
-		db.add("salamon", 3);
-	}
-	catch (const std::exception& x) {
-		std::cerr << "Caught exception: " << x.what() << std::endl;
-	}
-	catch (...) {
-		std::cerr << "Something happen..." << std::endl;
-	}
-
-	try {
-		db.add("bread", 10);
-	}
-	catch (const std::exception& x) {
-		std::cerr << "Caught exception: " << x.what() << std::endl;
-	}
-	catch (...) {
-		std::cerr << "Something happen..." << std::endl;
-	}*/
-
-	
-	//db.display();
-	//std::cout << std::endl << "================" << std::endl << std::endl;
-
-	////Добавление товара в корзину
-	//try {
-	//	crt.add("milk", 2, &db);
-	//}
-	//catch (const std::exception& x) {
-	//	std::cerr << "Caught exception: " << x.what() << std::endl;
-	//}
-	//catch (...) {
-	//	std::cerr << "Something happen..." << std::endl;
-	//}
-
-	//try {
-	//	crt.add("potato", 50, &db);
-	//}
-	//catch (const std::exception& x) {
-	//	std::cerr << "Caught exception: " << x.what() << std::endl;
-	//}
-	//catch (...) {
-	//	std::cerr << "Something happen..." << std::endl;
-	//}
-
-	//try {
-	//	crt.add("salamon", 4, &db);
-	//}
-	//catch (const std::exception& x) {
-	//	std::cerr << "Caught exception: " << x.what() << std::endl;
-	//}
-	//catch (...) {
-	//	std::cerr << "Something happen..." << std::endl;
-	//}
-
-	//try {
-	//	crt.add("bread", -1, &db);
-	//}
-	//catch (const std::exception& x) {
-	//	std::cerr << "Caught exception: " << x.what() << std::endl;
-	//}
-	//catch (...) {
-	//	std::cerr << "Something happen..." << std::endl;
-	//}
-
-	/*std::cout << std::endl << "================" << std::endl << std::endl;
-	crt.display();
-
-	std::cout << std::endl << "================" << std::endl << std::endl;
-	db.display();*/
+	return 0;
 }
